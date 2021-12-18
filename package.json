@@ -1,0 +1,25 @@
+{
+  "name": "deer-api",
+  "version": "0.1.0",
+  "author": "",
+  "description": "Api for deernetwork protocol",
+  "main": "dist/index.js",
+  "scripts": {
+    "lint": "eslint .",
+    "test": "jest",
+    "build": "tsc -p tsconfig.build.json",
+    "clean": "rimraf dist",
+    "prepublishOnly": "npm run -s clean && npm run -s build"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.4.0",
+    "@typescript-eslint/parser": "^5.4.0",
+    "eslint": "^8.3.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "prettier": "^2.4.1",
+    "typescript": "^4.5.2"
+  },
+  "keywords": [],
+  "license": "MIT"
+}

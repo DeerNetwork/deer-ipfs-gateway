@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "declaration": true,
+    "allowSyntheticDefaultImports": true,
+    "target": "ES6",
+    "sourceMap": true
+  }
+}
