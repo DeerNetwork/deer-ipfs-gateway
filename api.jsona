@@ -1,0 +1,43 @@
+{
+  @openapi({
+    servers: [
+      {
+        url: "http://localhost:5000",
+      }
+    ],
+    security: [
+      { jwt: [] }
+    ]
+  })
+  nonce: { @endpoint({summary:"Get nonce",security:[]})
+    route: "get /nonce",
+    req: {
+      query: {
+        address: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+      }
+    },
+    res: {
+      200: {
+        nonce: 0,
+      }
+    }
+  },
+  login: { @endpoint({summary:"Web3 auth login",security:[]})
+    route: "POST /login",
+    req: {
+      body: {
+        address: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+        signature: "0x2aeaa98e26062cf65161c68c5cb7aa31ca050cb5bdd07abc80a475d2a2eebc7b7a9c9546fbdff971b29419ddd9982bf4148c81a49df550154e1674a6b58bac84",
+      }
+    },
+    res: {
+      200: {
+        address: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+        token: "<data:token>",
+      }
+    }
+  },
+  upload: { @endpoint({summary:"Upload file"})
+    route: "POST /upload",
+  },
+}

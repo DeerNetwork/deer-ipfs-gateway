@@ -2,8 +2,10 @@
   "compilerOptions": {
     "module": "commonjs",
     "declaration": true,
+    "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "target": "ES6",
+    "skipLibCheck": true,
+    "target": "es2018",
     "sourceMap": true
   }
 }

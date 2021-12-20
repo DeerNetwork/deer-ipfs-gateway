@@ -1,0 +1,54 @@
+{
+  @openapi({
+    servers: [
+      {
+        url: "http://localhost:5001/api/v0",
+      }
+    ],
+    security: [
+      { auth: [] }
+    ]
+  })
+  add: {
+    route: 'POST /add',
+  },
+  blockGet: {
+    route: 'POST /block/get',
+  },
+  blockPut: {
+    route: 'POST /block/put',
+  },
+  blockStat: {
+    route: 'POST /block/stat',
+  },
+  cat: {
+    route: 'POST /cat',
+  },
+  dagGet: {
+    route: 'POST /dag/get',
+  },
+  dagPut: {
+    route: 'POST /dag/put',
+  },
+  dagResolve: {
+    route: 'POST /dag/resolve',
+  },
+  get: {
+    route: 'POST /get',
+  },
+  objectData: {
+    route: 'POST /object/data',
+  },
+  objectGet: {
+    route: 'POST /object/get',
+  },
+  objectPut: {
+    route: 'POST /object/put',
+  },
+  objectStat: {
+    route: 'POST /object/stat',
+  },
+  version: {
+    route: 'POST /version',
+  }
+}
