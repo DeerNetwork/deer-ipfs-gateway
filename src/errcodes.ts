@@ -26,6 +26,10 @@ const ErrCodes = {
     status: 400,
     message: "Invalid Signature",
   },
+  ErrBalance: {
+    status: 400,
+    message: "No balance",
+  },
 };
 
 export = ErrCodes;

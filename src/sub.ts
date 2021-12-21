@@ -41,6 +41,10 @@ export class Service {
   public async start() {
     await this.waitSynced();
   }
+  public async balanceOf(address: string) {
+    const account = await this.api.query.system.account(address);
+    return account.data.free.toBn();
+  }
 
   private async waitSynced() {
     let latestBlockNum: number;

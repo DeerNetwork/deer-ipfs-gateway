@@ -11,9 +11,11 @@ import * as errcodes from "./errcodes";
 
 const settings = {
   app: "ethsub",
+  host: "0.0.0.0",
+  port: "5050",
   baseDir: process.env.BASE_DIR || process.cwd(),
   signedMessage: "login to deer network with nonce: ${nonce}",
-  ipfs: "http://127.0.0.1:5001",
+  ipfsServer: "http://127.0.0.1:5001",
   tokenSecret: "a123456",
   tokenExpiresIn: 7 * 24 * 60 * 60,
 };

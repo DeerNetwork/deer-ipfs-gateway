@@ -38,15 +38,21 @@ const [kisa, mountKisa] = useKisa<
   },
 });
 
-const [kisaInner, mountKisaInner] = useKisa<State, ApiIpfs.Handlers<State>>({
+const [kisaIpfs, mountKisaInner] = useKisa<State, ApiIpfs.Handlers<State>>({
   prefix: "/_/",
   operations: ApiIpfs.OPERATIONS,
   errorHandlers: {
     validate: handleValidateError,
   },
+  securityHandlers: {
+    jwt: (_) =>
+      bearer("auth", async (token) => {
+        return jwt.verify(token, srvs.settings.tokenSecret);
+      }),
+  },
 });
 
-export { kisa, kisaInner };
+export { kisa, kisaIpfs };
 
 export default function createApp() {
   register();
@@ -76,5 +82,3 @@ export default function createApp() {
   app.use(router.allowedMethods());
   return app;
 }
-
-export const okBody = { msg: "OK" };
