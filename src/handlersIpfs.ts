@@ -30,14 +30,18 @@ export default function register() {
     req.on("data", (chunk: Buffer) => {
       const address = _.get(req, "address");
       const ok = statistic.inBytes(address, chunk.length);
-      if (!ok) proxyReq.destroy(new Error("lock of up quota"));
+      if (!ok) {
+        req.emit("lack:in", proxyReq);
+      }
     });
   });
   proxy.on("proxyRes", (proxyRes, req) => {
     proxyRes.on("data", (chunk: Buffer) => {
       const address = _.get(req, "address");
       const ok = statistic.outBytes(address, chunk.length);
-      if (!ok) proxyRes.destroy(new Error("lock of down quota"));
+      if (!ok) {
+        req.emit("lack:out", proxyRes);
+      }
     });
   });
   for (const operation of OPERATIONS) {
@@ -53,10 +57,23 @@ export default function register() {
       if (!limit.remaining) {
         throw errs.ErrRateLimit.toError();
       }
+      await statistic.checkStatistic(address);
       const { req } = ctx;
       _.set(req, "address", ctx.state.auth.address);
       await new Promise((resolve, reject) => {
         const resAdapter = makeProxyResponseAdapter(ctx.response, resolve);
+        (req as any).on("lack:in", (proxyReq) => {
+          const err = errs.ErrLackOfInQuota.toError();
+          srvs.logger.warn(err.message, { address });
+          proxyReq.destroy(err);
+        });
+        (req as any).on("lack:out", (proxyRes) => {
+          const err = errs.ErrLackOfOutQuota.toError();
+          srvs.logger.warn(err.message, { address });
+          proxyRes.destroy(err);
+          ctx.response.status = err.status;
+          ctx.response.body = { Error: err.message };
+        });
         proxy.web(
           req,
           resAdapter,

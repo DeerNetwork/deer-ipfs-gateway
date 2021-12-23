@@ -57,6 +57,18 @@ export class Service {
     return statistic;
   }
 
+  public async checkStatistic(address: string) {
+    const statistic = await this.getStatistic(address);
+    this.db[address] = statistic;
+    const { incomes, outcomes } = statistic;
+    if (incomes >= this.args.maxIncomes) {
+      throw srvs.errs.ErrLackOfInQuota.toError();
+    }
+    if (outcomes >= this.args.maxOutcomes) {
+      throw srvs.errs.ErrLackOfOutQuota.toError();
+    }
+  }
+
   public async saveAll() {
     const { redis } = srvs;
     const red = redis.multi();
@@ -89,12 +101,11 @@ export class Service {
   async sync(address: string, statistic: StatisticData) {
     const { redis } = srvs;
     const data = await redis.hget(redis.statisticKey, address);
-    if (!data) {
-      statistic.type = "full";
-    } else {
+    if (data) {
       const cachedStats: Partial<StatisticData> = JSON.parse(data);
       statistic.incomes += cachedStats.incomes;
       statistic.outcomes += cachedStats.outcomes;
+      statistic.type = "full";
     }
   }
 

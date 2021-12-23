@@ -38,6 +38,14 @@ const ErrCodes = {
     status: 429,
     messgae: "Two many requests",
   },
+  ErrLackOfInQuota: {
+    status: 400,
+    message: "lack of in quota",
+  },
+  ErrLackOfOutQuota: {
+    status: 400,
+    message: "lack of out quota",
+  },
 };
 
 export = ErrCodes;

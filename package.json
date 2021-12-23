@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "ts-node src/index.ts",
     "lint": "eslint .",
-    "test": "apitest tests --ci",
+    "test": "apitest tests",
     "build": "tsc -p tsconfig.build.json",
     "clean": "rimraf dist",
     "prepublishOnly": "npm run -s clean && npm run -s build",

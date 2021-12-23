@@ -30,6 +30,7 @@
       }
     },
     res: {
+      status: 200,
       body: "", @type
     }
   },
