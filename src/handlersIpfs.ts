@@ -2,14 +2,16 @@ import httpProxy from "http-proxy";
 import { Context } from "kisa";
 import _ from "lodash";
 import AsyncRateLimiter, { Status as RateLimitStatus } from "async-ratelimiter";
+import { OutgoingMessage, ServerResponse } from "http";
+import { Response } from "koa";
+import { PassThrough } from "stream";
 
 import { srvs } from "./services";
 import { kisaIpfs, AppState } from "./app";
 import { OPERATIONS } from "./generated/apiIpfs";
-import { collectHttpInfo } from "./middlewares/error";
 
 export default function register() {
-  const { settings, logger, statistic, redis, errs } = srvs;
+  const { settings, statistic, redis, errs } = srvs;
   const { ipfsServer } = settings;
   const proxy = httpProxy.createProxyServer();
   const readRateLimiter = new AsyncRateLimiter({
@@ -28,14 +30,14 @@ export default function register() {
     req.on("data", (chunk: Buffer) => {
       const address = _.get(req, "address");
       const ok = statistic.inBytes(address, chunk.length);
-      if (!ok) proxyReq.destroy(new Error("lock of quota"));
+      if (!ok) proxyReq.destroy(new Error("lock of up quota"));
     });
   });
   proxy.on("proxyRes", (proxyRes, req) => {
     proxyRes.on("data", (chunk: Buffer) => {
       const address = _.get(req, "address");
       const ok = statistic.outBytes(address, chunk.length);
-      if (!ok) proxyRes.destroy(new Error("lock of quota"));
+      if (!ok) proxyRes.destroy(new Error("lock of down quota"));
     });
   });
   for (const operation of OPERATIONS) {
@@ -51,22 +53,51 @@ export default function register() {
       if (!limit.remaining) {
         throw errs.ErrRateLimit.toError();
       }
-      const { req, res } = ctx;
+      const { req } = ctx;
       _.set(req, "address", ctx.state.auth.address);
-      proxy.web(
-        req,
-        res,
-        {
-          target: ipfsServer,
-        },
-        (error) => {
-          logger.error(error, collectHttpInfo(ctx));
-          ctx.status = 500;
-          ctx.body = {
-            Error: error.message,
-          };
-        }
-      );
+      await new Promise((resolve, reject) => {
+        const resAdapter = makeProxyResponseAdapter(ctx.response, resolve);
+        proxy.web(
+          req,
+          resAdapter,
+          {
+            target: ipfsServer,
+          },
+          reject
+        );
+      });
     };
   }
+}
+
+function makeProxyResponseAdapter(
+  response: Response,
+  done: (v?: any) => void
+): ServerResponse {
+  const resAdapter = new OutgoingMessage() as ServerResponse;
+
+  resAdapter.on("pipe", (proxyRes) => {
+    proxyRes.unpipe(resAdapter);
+
+    response.status = resAdapter.statusCode;
+    response.message = resAdapter.statusMessage;
+
+    for (const [headerName, headerVal] of Object.entries(
+      resAdapter.getHeaders()
+    )) {
+      if (_.isNil(headerVal)) {
+        continue;
+      }
+      response.set(
+        headerName,
+        _.isNumber(headerVal) ? _.toString(headerVal) : headerVal
+      );
+    }
+
+    response.body = proxyRes.pipe(new PassThrough());
+
+    done();
+  });
+
+  return resAdapter;
 }

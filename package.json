@@ -7,14 +7,16 @@
   "keywords": [],
   "license": "MIT",
   "scripts": {
+    "dev": "ts-node src/index.ts",
     "lint": "eslint .",
-    "test": "jest",
+    "test": "apitest tests --ci",
     "build": "tsc -p tsconfig.build.json",
     "clean": "rimraf dist",
     "prepublishOnly": "npm run -s clean && npm run -s build",
-    "kisagen": "npm run kisagen:api && npm run kisagen:apiIpfs",
+    "kisagen": "npm run kisagen:api && npm run kisagen:apiIpfs && npm run kisagen:apiInner",
     "kisagen:api": "kisa-typegen api.jsona src/generated/api.ts",
-    "kisagen:apiIpfs": "kisa-typegen apiIpfs.jsona src/generated/apiIpfs.ts"
+    "kisagen:apiIpfs": "kisa-typegen apiIpfs.jsona src/generated/apiIpfs.ts",
+    "kisagen:apiInner": "kisa-typegen apiInner.jsona src/generated/apiInner.ts"
   },
   "dependencies": {
     "@koa/cors": "^3.1.0",
@@ -25,6 +27,7 @@
     "@use-services/winston": "^1.3.1",
     "async-ratelimiter": "^1.3.0",
     "http-proxy": "^1.18.1",
+    "ioredis": "^4.28.2",
     "jsonwebtoken": "^8.5.1",
     "kisa": "^0.5.1",
     "koa-bodyparser": "^4.3.0",
@@ -43,6 +46,7 @@
     "eslint-plugin-prettier": "^4.0.0",
     "kisa-typegen": "^0.2.1",
     "prettier": "^2.4.1",
+    "ts-node": "^10.4.0",
     "typescript": "^4.5.2"
   }
 }

@@ -1,0 +1,25 @@
+{
+  @openapi
+  health: { @endpoint({summary:"check health"})
+    route: "GET /health",
+  },
+  runSrvs: { @endpoint({summary:"call srvs api","x-debug":true})
+    route: "POST /srvs",
+    req: {
+      body: {
+        path: "mock.delay",
+        args: [
+        ],
+        ret: false, @description("whether return value?") @optional
+      }
+    }
+  },
+  staticFile: { @endpoint({summary:"serve static files","x-debug":true})
+    route: "GET /static/{}",
+    req: {
+      params: {
+        name: "",  @description("file name")
+      }
+    }
+  }
+}

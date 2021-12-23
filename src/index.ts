@@ -2,9 +2,10 @@ import pEvent from "p-event";
 import http from "http";
 import stoppable from "stoppable";
 import { promisify } from "util";
-import "./types";
 import { init, srvs } from "./services";
 import createApp from "./app";
+
+const pkg = require("../package.json"); // eslint-disable-line
 
 async function main() {
   let server: any;
@@ -19,6 +20,7 @@ async function main() {
   let stop;
   try {
     stop = await init();
+    srvs.logger.info(`version ${pkg.version}`);
     const { host, port } = srvs.settings;
     await srvs.sub.start();
     await createApp();

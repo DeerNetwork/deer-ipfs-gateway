@@ -1,0 +1,13 @@
+{
+  @client({
+    name: "default",
+    kind: "http",
+    options: {
+      baseURL: "http://localhost:5050",
+      timeout: 60000,
+    }
+  })
+  @mixin("mixin")
+  @module("auth")
+  @module("ipfs")
+}

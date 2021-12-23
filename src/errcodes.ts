@@ -7,6 +7,10 @@ const ErrCodes = {
     status: 404,
     message: "Not found",
   },
+  ErrDebugOnly: {
+    status: 400,
+    message: "Debug only",
+  },
   ErrInternal: {
     status: 500,
     message: "${message}",

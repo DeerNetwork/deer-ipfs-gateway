@@ -9,7 +9,7 @@
       { jwt: [] }
     ]
   })
-  nonce: { @endpoint({summary:"Get nonce",security:[]})
+  getNonce: { @endpoint({summary:"Get nonce",security:[]})
     route: "get /nonce",
     req: {
       query: {
@@ -18,11 +18,12 @@
     },
     res: {
       200: {
+        address: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
         nonce: 0,
       }
     }
   },
-  login: { @endpoint({summary:"Web3 auth login",security:[]})
+  login: { @endpoint({summary:"login with signature",security:[]})
     route: "POST /login",
     req: {
       body: {
@@ -37,7 +38,7 @@
       }
     }
   },
-  statistic: { @endpoint({summary:"Show statistic"})
+  getStatistic: { @endpoint({summary:"Show statistic"})
     route: "GET /statistic",
     req: {},
     res: {

@@ -6,19 +6,31 @@ import _ from "lodash";
 import { kisa } from "./app";
 
 export default function register() {
-  const { errs, sub, redis } = srvs;
+  const { errs, sub, redis, statistic } = srvs;
   const makeSignedMessage = _.template(srvs.settings.signedMessage);
-  kisa.handlers.nonce = async (ctx) => {
-    const { address } = ctx.kisa.query;
-    const publicKey = addressToPubkey(address);
-    if (!publicKey) throw errs.ErrAddress.toError();
+  kisa.handlers.getNonce = async (ctx) => {
+    const { address: rawAddress } = ctx.kisa.query;
+    let address: string;
+    try {
+      address = sub.normalizeAddress(rawAddress);
+    } catch {
+      throw errs.ErrAddress.toError();
+    }
+    if (!address) throw errs.ErrAddress.toError();
     const nonce = await srvs.redis.getNonce(address);
-    ctx.body = { nonce };
+    ctx.body = { nonce, address };
   };
   kisa.handlers.login = async (ctx) => {
-    const { address, signature } = ctx.kisa.body;
-    const publicKey = addressToPubkey(address);
-    if (!publicKey) throw errs.ErrAddress.toError();
+    const { address: rawAddress, signature } = ctx.kisa.body;
+    let address: string;
+    let publicKey: string;
+    try {
+      address = sub.normalizeAddress(rawAddress);
+      publicKey = addressToPubkey(address);
+    } catch {
+      throw errs.ErrAddress.toError();
+    }
+    if (!address) throw errs.ErrAddress.toError();
     const nonce = await srvs.redis.getNonce(address);
     const signedMessage = makeSignedMessage({ nonce });
     if (!signatureVerify(signedMessage, signature, publicKey).isValid) {
@@ -30,25 +42,16 @@ export default function register() {
     }
     ctx.body = makeJwt(address);
   };
-  kisa.handlers.statistic = async (ctx) => {
+  kisa.handlers.getStatistic = async (ctx) => {
     const { address } = ctx.state.auth;
-    const [[, incomes], [, outcomes]] = await redis
-      .multi()
-      .get(redis.joinKey("inBytes", address))
-      .get(redis.joinKey("outBytes", address))
-      .exec();
-    ctx.body = {
-      incomes: parseInt(incomes) || 0,
-      outcomes: parseInt(outcomes) || 0,
-    };
+    const { incomes, outcomes } = await statistic.mustGet(address);
+    ctx.body = { incomes, outcomes };
   };
 }
 
 function addressToPubkey(address: string): string {
-  try {
-    const publicKey = decodeAddress(address);
-    return u8aToHex(publicKey);
-  } catch {}
+  const publicKey = decodeAddress(address);
+  return u8aToHex(publicKey);
 }
 
 function makeJwt(address: string) {

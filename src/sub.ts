@@ -21,11 +21,7 @@ export interface Args {
 export class Service {
   private api: ApiPromise;
   private args: Args;
-  private destoryed = false;
   public constructor(option: InitOption<Args, Service>) {
-    if (option.deps.length !== 1) {
-      throw new Error("miss deps [store]");
-    }
     this.args = option.args;
   }
   public async [INIT_KEY]() {
@@ -35,7 +31,6 @@ export class Service {
     await Promise.all([this.api.isReady, cryptoWaitReady()]);
   }
   public async [STOP_KEY]() {
-    this.destoryed = true;
     await this.api.disconnect();
   }
   public async start() {
@@ -44,6 +39,9 @@ export class Service {
   public async balanceOf(address: string) {
     const account = await this.api.query.system.account(address);
     return account.data.free.toBn();
+  }
+  public normalizeAddress(address: string) {
+    return this.api.createType("AccountId", address).toString();
   }
 
   private async waitSynced() {

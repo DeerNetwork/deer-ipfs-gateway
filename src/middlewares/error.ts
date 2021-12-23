@@ -18,8 +18,9 @@ export default function error(): Middleware {
       let err: HttpError<any>;
       if (!(e instanceof HttpError)) {
         logger.error(e, collectHttpInfo(ctx));
-        err = errs.ErrInternal.toError(e.message);
+        err = errs.ErrInternal.toError({ message: e.message });
       } else {
+        err = e;
         if (err.status >= 500) {
           logger.error(err, collectHttpInfo(ctx));
         }

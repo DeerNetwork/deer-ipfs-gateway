@@ -1,13 +1,6 @@
-import {
-  ServiceOption,
-  InitOption,
-  createInitFn,
-  STOP_KEY,
-  INIT_KEY,
-} from "use-services";
+import { ServiceOption, InitOption, createInitFn } from "use-services";
 import RedisService from "./redis";
 import { srvs } from "./services";
-import { sleep } from "./utils";
 
 export type Option<S extends Service> = ServiceOption<Args, S>;
 
@@ -27,28 +20,14 @@ interface StatisticData {
 
 export class Service {
   private args: Args;
-  private destoryed = false;
-  private lastRunAt = 0;
-  private statistics: { [k: string]: StatisticData } = {};
+  private db: { [k: string]: StatisticData } = {};
   constructor(option: InitOption<Args, Service>) {
-    if (option.deps.length !== 1) {
-      throw new Error("miss deps [redis]");
-    }
     this.args = option.args;
   }
 
-  public async [INIT_KEY]() {
-    //
-  }
-
-  public [STOP_KEY]() {
-    this.destoryed = true;
-  }
-
   public inBytes(address: string, bytes: number) {
-    let statistic = this.statistics[address];
-    if (!statistic)
-      statistic = this.statistics[address] = this.defaultStatistic;
+    let statistic = this.db[address];
+    if (!statistic) statistic = this.db[address] = this.useDefault();
     statistic.incomes += bytes;
     statistic.changeAt = Date.now();
     if (statistic.type === "full") {
@@ -58,12 +37,12 @@ export class Service {
     } else {
       this.sync(address, statistic);
     }
+    return true;
   }
 
   public outBytes(address: string, bytes: number) {
-    let statistic = this.statistics[address];
-    if (!statistic)
-      statistic = this.statistics[address] = this.defaultStatistic;
+    let statistic = this.db[address];
+    if (!statistic) statistic = this.db[address] = this.useDefault();
     statistic.outcomes += bytes;
     statistic.changeAt = Date.now();
     if (statistic.type === "full") {
@@ -76,21 +55,31 @@ export class Service {
     return true;
   }
 
+  public async mustGet(address: string) {
+    const statistic = this.db[address] || this.useDefault();
+    if (statistic.type === "full") {
+      return statistic;
+    }
+    return this.sync(address, statistic);
+  }
+
   async sync(address: string, statistic: StatisticData) {
     const { redis } = srvs;
     const data = await redis.get(redis.joinKey("statistic", address));
-    if (data) {
+    if (!data) {
+      statistic.type = "full";
+    } else {
       const cachedStats: StatisticData = JSON.parse(data);
       cachedStats.incomes += statistic.incomes;
       cachedStats.outcomes += statistic.outcomes;
       cachedStats.changeAt = statistic.changeAt;
-      this.statistics[address] = cachedStats;
-    } else {
-      statistic.type = "full";
+      statistic = cachedStats;
     }
+    this.db[address] = statistic;
+    return statistic;
   }
 
-  get defaultStatistic(): StatisticData {
+  useDefault(): StatisticData {
     return { type: "local", incomes: 0, outcomes: 0, changeAt: 0 };
   }
 }

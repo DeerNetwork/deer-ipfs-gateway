@@ -1,4 +1,4 @@
-import useKisa, { App, Router, HandleValidateError } from "kisa";
+import useKisa, { App, Router, HandleValidateError, State } from "kisa";
 import jwt from "jsonwebtoken";
 import cors from "@koa/cors";
 import bodyParser from "koa-bodyparser";
@@ -7,8 +7,10 @@ import bearer from "./middlewares/bearer";
 import error from "./middlewares/error";
 import * as Api from "./generated/api";
 import * as ApiIpfs from "./generated/apiIpfs";
+import * as ApiInner from "./generated/apiInner";
 import register from "./hanlders";
-import registerInner from "./handlersIpfs";
+import registerIpfs from "./handlersIpfs";
+import registerInner from "./handlersInner";
 
 export interface AppState {
   auth?: {
@@ -25,6 +27,7 @@ const [kisa, mountKisa] = useKisa<
   Api.Handlers<AppState>,
   Api.SecurityHandlers<AppState>
 >({
+  prefix: "/",
   operations: Api.OPERATIONS,
   errorHandlers: {
     validate: handleValidateError,
@@ -42,7 +45,7 @@ const [kisaIpfs, mountKisaIpfs] = useKisa<
   ApiIpfs.Handlers<AppState>,
   Api.SecurityHandlers<AppState>
 >({
-  prefix: "/_/",
+  prefix: "/api/v0/",
   operations: ApiIpfs.OPERATIONS,
   errorHandlers: {
     validate: handleValidateError,
@@ -55,10 +58,24 @@ const [kisaIpfs, mountKisaIpfs] = useKisa<
   },
 });
 
-export { kisa, kisaIpfs };
+const [kisaInner, mountKisaInner] = useKisa<State, ApiInner.Handlers<State>>({
+  prefix: "/_/",
+  operations: ApiInner.OPERATIONS,
+  hook: async (ctx, operation) => {
+    if (srvs.settings.prod && operation.xProps["x-debug"]) {
+      throw srvs.errs.ErrDebugOnly.toError();
+    }
+  },
+  errorHandlers: {
+    validate: handleValidateError,
+  },
+});
+
+export { kisa, kisaIpfs, kisaInner };
 
 export default function createApp() {
   register();
+  registerIpfs();
   registerInner();
 
   const app = new App();
@@ -80,6 +97,7 @@ export default function createApp() {
   );
   mountKisa(router);
   mountKisaIpfs(router);
+  mountKisaInner(router);
   app.use(router.routes());
   app.use(router.allowedMethods());
   return app;

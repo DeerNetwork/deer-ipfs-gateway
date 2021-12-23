@@ -1,0 +1,48 @@
+{
+  variables: { @describe("define vairables") @client("echo")
+    req: {
+      address1: "15oF4uVJwmo4TdGW7VfQxNLavjCXviqxT9S1MgbjMNHr6Sp5",
+      suri1: "//Alice"
+    },
+  },
+  getNonce: { @describe("get nonce") @mixin(["getNonce"])
+    req: {
+      query: {
+        address: "variables.req.address1", @eval
+      }
+    },
+    res: {
+      body: {
+        nonce: 0,
+        address: "variables.req.address1", @eval
+      }
+    }
+  },
+  getSignature: { @describe("get signature") @mixin(["runSrvs"])
+    req: {
+      body: {
+        path: "mock.sig",
+        args: [
+          "variables.req.suri1", @eval
+          "getNonce.res.body.nonce", @eval
+        ],
+        ret: true,
+      }
+    }
+  },
+  login: { @describe("login with signature") @mixin(["login"])
+    req: {
+      body: {
+        address: "variables.req.address1", @eval
+        signature: "getSignature.res.body.signature", @eval
+      }
+    },
+    res: {
+      body: {
+        address: "variables.req.address1", @eval
+        token: "", @type
+        expireAt: 0, @type
+      }
+    }
+  }
+}

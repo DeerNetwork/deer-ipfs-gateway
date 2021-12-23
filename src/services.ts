@@ -7,18 +7,24 @@ import * as HttpErr from "@use-services/httperr";
 import { mergeJson } from "./utils";
 import * as Sub from "./sub";
 import * as Statistic from "./statistic";
-import Redis from "./redis";
+import * as Mock from "./mock";
 import * as errcodes from "./errcodes";
+import Redis from "./redis";
 
 const settings = {
   app: "ethsub",
   host: "0.0.0.0",
-  port: "5050",
+  port: 5050,
+  prod: process.env.NODE_ENV === "production",
   baseDir: process.env.BASE_DIR || process.cwd(),
   signedMessage: "login to deer network with nonce: ${nonce}",
   ipfsServer: "http://127.0.0.1:5001",
   tokenSecret: "a123456",
   tokenExpiresIn: 7 * 24 * 60 * 60,
+  staticFiles: {
+    api: "api.jsona",
+    apiIpfs: "apiIpfs.jsona",
+  },
 };
 
 const options = {
@@ -51,7 +57,6 @@ const options = {
   } as Statistic.Option<Statistic.Service>,
   sub: {
     init: Sub.init,
-    deps: ["store"],
     args: {
       url: "ws://localhost:9944",
     },
@@ -60,6 +65,10 @@ const options = {
     init: HttpErr.init,
     args: errcodes,
   } as HttpErr.Option<typeof errcodes>,
+  mock: {
+    init: Mock.init,
+    args: {},
+  } as Mock.Option,
 };
 
 mergeJson(options, path.resolve(settings.baseDir, "config.json"));

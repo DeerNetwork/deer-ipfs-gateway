@@ -1,0 +1,46 @@
+{
+  version: { @mixin(["version", "auth1"])
+    res: {
+      body: { @partial
+        Version: "", @type
+      }
+    },
+  },
+  add: { @mixin(["add", "auth1"])
+    req: {
+      headers: {
+        'content-type': 'multipart/form-data',
+      },
+      body: {
+        file: "main.jsona", @file
+      }
+    },
+    res: {
+      body: {
+        Name: "", @type
+        Hash: "", @type
+        Size: "", @type
+      }
+    }
+  },
+  cat: { @mixin(["cat", "auth1"])
+    req: {
+      query: {
+        arg: "add.res.body.Hash", @eval
+      }
+    },
+    res: {
+      body: "", @type
+    }
+  },
+  getStatistic: { @mixin(["getStatistic", "auth1"])
+    req: {
+    },
+    res: {
+      body: {
+        incomes: 0, @type
+        outcomes: 0, @type
+      }
+    }
+  }
+}

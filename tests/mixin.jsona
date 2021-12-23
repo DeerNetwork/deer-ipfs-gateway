@@ -1,0 +1,118 @@
+{
+  "runSrvs": {
+    "req": {
+      "method": "post",
+      "url": "/_/srvs"
+    }
+  },
+  "getNonce": {
+    "req": {
+      "method": "get",
+      "url": "/nonce"
+    }
+  },
+  "login": {
+    "req": {
+      "method": "post",
+      "url": "/login"
+    }
+  },
+  "getStatistic": {
+    "req": {
+      "method": "get",
+      "url": "/statistic"
+    }
+  },
+  "add": {
+    "req": {
+      "method": "post",
+      "url": "/api/v0/add"
+    }
+  },
+  "blockGet": {
+    "req": {
+      "method": "post",
+      "url": "/api/v0/block/get"
+    }
+  },
+  "blockPut": {
+    "req": {
+      "method": "post",
+      "url": "/api/v0/block/put"
+    }
+  },
+  "blockStat": {
+    "req": {
+      "method": "post",
+      "url": "/api/v0/block/stat"
+    }
+  },
+  "cat": {
+    "req": {
+      "method": "post",
+      "url": "/api/v0/cat"
+    }
+  },
+  "dagGet": {
+    "req": {
+      "method": "post",
+      "url": "/api/v0/dag/get"
+    }
+  },
+  "dagPut": {
+    "req": {
+      "method": "post",
+      "url": "/api/v0/dag/put"
+    }
+  },
+  "dagResolve": {
+    "req": {
+      "method": "post",
+      "url": "/api/v0/dag/resolve"
+    }
+  },
+  "get": {
+    "req": {
+      "method": "post",
+      "url": "/api/v0/get"
+    }
+  },
+  "objectData": {
+    "req": {
+      "method": "post",
+      "url": "/api/v0/object/data"
+    }
+  },
+  "objectGet": {
+    "req": {
+      "method": "post",
+      "url": "/api/v0/object/get"
+    }
+  },
+  "objectPut": {
+    "req": {
+      "method": "post",
+      "url": "/api/v0/object/put"
+    }
+  },
+  "objectStat": {
+    "req": {
+      "method": "post",
+      "url": "/api/v0/object/stat"
+    }
+  },
+  "version": {
+    "req": {
+      "method": "post",
+      "url": "/api/v0/version"
+    }
+  },
+
+  auth1: {
+    req: {
+      headers: {
+        authorization: `"Bearer " + auth.login.res.body.token`, @eval
+      }
+    }
+  },
+}
