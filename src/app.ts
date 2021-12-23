@@ -1,7 +1,6 @@
-import useKisa, { State, App, Router, HandleValidateError } from "kisa";
+import useKisa, { App, Router, HandleValidateError } from "kisa";
 import jwt from "jsonwebtoken";
 import cors from "@koa/cors";
-import helmet from "koa-helmet";
 import bodyParser from "koa-bodyparser";
 import { srvs } from "./services";
 import bearer from "./middlewares/bearer";
@@ -11,9 +10,9 @@ import * as ApiIpfs from "./generated/apiIpfs";
 import register from "./hanlders";
 import registerInner from "./handlersIpfs";
 
-interface ApiState {
+export interface AppState {
   auth?: {
-    userId: number;
+    address: string;
   };
 }
 
@@ -22,9 +21,9 @@ const handleValidateError: HandleValidateError = (ctx, errors) => {
 };
 
 const [kisa, mountKisa] = useKisa<
-  ApiState,
-  Api.Handlers<ApiState>,
-  Api.SecurityHandlers<ApiState>
+  AppState,
+  Api.Handlers<AppState>,
+  Api.SecurityHandlers<AppState>
 >({
   operations: Api.OPERATIONS,
   errorHandlers: {
@@ -38,7 +37,11 @@ const [kisa, mountKisa] = useKisa<
   },
 });
 
-const [kisaIpfs, mountKisaInner] = useKisa<State, ApiIpfs.Handlers<State>>({
+const [kisaIpfs, mountKisaIpfs] = useKisa<
+  AppState,
+  ApiIpfs.Handlers<AppState>,
+  Api.SecurityHandlers<AppState>
+>({
   prefix: "/_/",
   operations: ApiIpfs.OPERATIONS,
   errorHandlers: {
@@ -67,7 +70,6 @@ export default function createApp() {
       allowHeaders: "*",
     })
   );
-  app.use(helmet());
   app.use(
     bodyParser({
       enableTypes: ["json"],
@@ -77,7 +79,7 @@ export default function createApp() {
     })
   );
   mountKisa(router);
-  mountKisaInner(router);
+  mountKisaIpfs(router);
   app.use(router.routes());
   app.use(router.allowedMethods());
   return app;

@@ -37,7 +37,14 @@
       }
     }
   },
-  upload: { @endpoint({summary:"Upload file"})
-    route: "POST /upload",
-  },
+  statistic: { @endpoint({summary:"Show statistic"})
+    route: "GET /statistic",
+    req: {},
+    res: {
+      200: {
+        incomes: 0, @description("入站流量")
+        outcomes: 0, @description("出站流量")
+      }
+    }
+  }
 }

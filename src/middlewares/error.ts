@@ -11,22 +11,21 @@ export default function error(): Middleware {
       if (typeof ctx.response.body === "undefined") {
         const err = errs.ErrNotFound.toError();
         ctx.status = err.status;
-        ctx.body = err.message;
+        ctx.body = { Error: err.message };
         return;
       }
-    } catch (err) {
-      if (err instanceof HttpError) {
+    } catch (e) {
+      let err: HttpError<any>;
+      if (!(e instanceof HttpError)) {
+        logger.error(e, collectHttpInfo(ctx));
+        err = errs.ErrInternal.toError(e.message);
+      } else {
         if (err.status >= 500) {
           logger.error(err, collectHttpInfo(ctx));
         }
-        ctx.status = err.status;
-        ctx.body = err.message;
-        return;
       }
-      logger.error(err, collectHttpInfo(ctx));
-      const err2 = errs.ErrInternal.toError();
-      ctx.status = err2.status;
-      ctx.body = err2.message;
+      ctx.status = err.status;
+      ctx.body = { Error: err.message };
     }
   };
 }
@@ -44,16 +43,15 @@ const OMIT_HEADERS = [
   "user-agent",
 ];
 
-function collectHttpInfo(ctx: Context) {
+export function collectHttpInfo(ctx: Context) {
   const { request } = ctx;
   const { url, query, headers, body } = request;
-  const { auth, authM } = _.pick(ctx.state, ["auth", "authM"]);
+  const { auth } = _.pick(ctx.state, ["auth"]);
   return {
     url,
     query,
     headers: _.omit(headers, OMIT_HEADERS),
     auth,
-    authM,
     body,
   };
 }

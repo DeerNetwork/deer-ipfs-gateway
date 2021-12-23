@@ -6,8 +6,8 @@ export default class Redis extends Service {
   public joinKey(...pairs: string[]) {
     return [srvs.settings.app, ...pairs].join(this.sep);
   }
-  public async getAdressNonce(address: string) {
-    const nonce = await this.get(this.joinKey("addressNonce"));
+  public async getNonce(address: string) {
+    const nonce = await this.get(this.joinKey("nonce", address));
     if (!nonce) return 0;
     return parseInt(nonce) || 0;
   }

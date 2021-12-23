@@ -6,6 +6,7 @@ import * as IORedis from "@use-services/ioredis";
 import * as HttpErr from "@use-services/httperr";
 import { mergeJson } from "./utils";
 import * as Sub from "./sub";
+import * as Statistic from "./statistic";
 import Redis from "./redis";
 import * as errcodes from "./errcodes";
 
@@ -41,6 +42,13 @@ const options = {
     },
     ctor: Redis,
   } as IORedis.Option<Redis>,
+  statistic: {
+    init: Statistic.init,
+    args: {
+      maxIncomes: 5 * 1024 * 1024 * 1024,
+      maxOutcomes: 5 * 1024 * 1024 * 1024,
+    },
+  } as Statistic.Option<Statistic.Service>,
   sub: {
     init: Sub.init,
     deps: ["store"],

@@ -9,13 +9,13 @@
       { jwt: [] }
     ]
   })
-  add: {
+  add: { @endpoint({'x-write':true})
     route: 'POST /add',
   },
   blockGet: {
     route: 'POST /block/get',
   },
-  blockPut: {
+  blockPut: { @endpoint({'x-write':true})
     route: 'POST /block/put',
   },
   blockStat: {
@@ -27,7 +27,7 @@
   dagGet: {
     route: 'POST /dag/get',
   },
-  dagPut: {
+  dagPut: { @endpoint({'x-write':true})
     route: 'POST /dag/put',
   },
   dagResolve: {
@@ -42,7 +42,7 @@
   objectGet: {
     route: 'POST /object/get',
   },
-  objectPut: {
+  objectPut: { @endpoint({'x-write':true})
     route: 'POST /object/put',
   },
   objectStat: {

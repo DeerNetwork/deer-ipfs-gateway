@@ -2,8 +2,8 @@ import { ApiPromise, WsProvider } from "@polkadot/api";
 import { cryptoWaitReady } from "@polkadot/util-crypto";
 import { sleep } from "./utils";
 import { srvs } from "./services";
-
 import _ from "lodash";
+
 import {
   ServiceOption,
   InitOption,

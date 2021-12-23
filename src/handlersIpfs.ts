@@ -1,29 +1,72 @@
 import httpProxy from "http-proxy";
-import { IncomingMessage, ServerResponse } from "http";
+import { Context } from "kisa";
+import _ from "lodash";
+import AsyncRateLimiter, { Status as RateLimitStatus } from "async-ratelimiter";
+
 import { srvs } from "./services";
-import { kisaIpfs } from "./app";
+import { kisaIpfs, AppState } from "./app";
+import { OPERATIONS } from "./generated/apiIpfs";
+import { collectHttpInfo } from "./middlewares/error";
 
 export default function register() {
-  const { settings } = srvs;
+  const { settings, logger, statistic, redis, errs } = srvs;
   const { ipfsServer } = settings;
   const proxy = httpProxy.createProxyServer();
-  const proxyIpfs = async (req: IncomingMessage, res: ServerResponse) => {
-    proxy.web(req, res, {
-      target: ipfsServer,
+  const readRateLimiter = new AsyncRateLimiter({
+    duration: 60000,
+    max: 100,
+    namespace: redis.joinKey("readRateLimit"),
+    db: redis,
+  });
+  const writeRateLimiter = new AsyncRateLimiter({
+    duration: 60000,
+    max: 10,
+    namespace: redis.joinKey("writeRateLimit"),
+    db: redis,
+  });
+  proxy.on("proxyReq", (proxyReq, req) => {
+    req.on("data", (chunk: Buffer) => {
+      const address = _.get(req, "address");
+      const ok = statistic.inBytes(address, chunk.length);
+      if (!ok) proxyReq.destroy(new Error("lock of quota"));
     });
-  };
-  // kisaIpfs.handlers.add = async (ctx) => {};
-  // kisaIpfs.handlers.cat = async (ctx) => {};
-  // kisaIpfs.handlers.get = async (ctx) => {};
-  kisaIpfs.handlers.blockGet = async (ctx) => proxyIpfs(ctx.req, ctx.res);
-  kisaIpfs.handlers.blockPut = async (ctx) => proxyIpfs(ctx.req, ctx.res);
-  kisaIpfs.handlers.blockStat = async (ctx) => proxyIpfs(ctx.req, ctx.res);
-  kisaIpfs.handlers.dagGet = async (ctx) => proxyIpfs(ctx.req, ctx.res);
-  kisaIpfs.handlers.dagPut = async (ctx) => proxyIpfs(ctx.req, ctx.res);
-  kisaIpfs.handlers.dagResolve = async (ctx) => proxyIpfs(ctx.req, ctx.res);
-  kisaIpfs.handlers.objectData = async (ctx) => proxyIpfs(ctx.req, ctx.res);
-  kisaIpfs.handlers.objectGet = async (ctx) => proxyIpfs(ctx.req, ctx.res);
-  kisaIpfs.handlers.objectPut = async (ctx) => proxyIpfs(ctx.req, ctx.res);
-  kisaIpfs.handlers.objectStat = async (ctx) => proxyIpfs(ctx.req, ctx.res);
-  kisaIpfs.handlers.version = async (ctx) => proxyIpfs(ctx.req, ctx.res);
+  });
+  proxy.on("proxyRes", (proxyRes, req) => {
+    proxyRes.on("data", (chunk: Buffer) => {
+      const address = _.get(req, "address");
+      const ok = statistic.outBytes(address, chunk.length);
+      if (!ok) proxyRes.destroy(new Error("lock of quota"));
+    });
+  });
+  for (const operation of OPERATIONS) {
+    const { operationId, xProps } = operation;
+    kisaIpfs.handlers[operationId] = async (ctx: Context<AppState>) => {
+      const { address } = ctx.state.auth;
+      let limit: RateLimitStatus;
+      if (xProps["x-write"]) {
+        limit = await writeRateLimiter.get({ id: address });
+      } else {
+        limit = await readRateLimiter.get({ id: address });
+      }
+      if (!limit.remaining) {
+        throw errs.ErrRateLimit.toError();
+      }
+      const { req, res } = ctx;
+      _.set(req, "address", ctx.state.auth.address);
+      proxy.web(
+        req,
+        res,
+        {
+          target: ipfsServer,
+        },
+        (error) => {
+          logger.error(error, collectHttpInfo(ctx));
+          ctx.status = 500;
+          ctx.body = {
+            Error: error.message,
+          };
+        }
+      );
+    };
+  }
 }

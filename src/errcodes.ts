@@ -1,34 +1,38 @@
 const ErrCodes = {
   ErrAuth: {
     status: 401,
-    message: "Invalid Authorization",
+    message: "Invalid authorization",
   },
   ErrNotFound: {
     status: 404,
-    message: "Not Found",
+    message: "Not found",
   },
   ErrInternal: {
     status: 500,
     message: "${message}",
     args: {
-      message: "Unexpect Error",
+      message: "Unexpect error",
     },
   },
   ErrValidation: {
     status: 400,
-    message: "Validate Failed",
+    message: "Validate error",
   },
   ErrAddress: {
     status: 400,
-    message: "Invalid Address",
+    message: "Invalid address",
   },
   ErrSignature: {
     status: 400,
-    message: "Invalid Signature",
+    message: "Invalid signature",
   },
   ErrBalance: {
     status: 400,
     message: "No balance",
+  },
+  ErrRateLimit: {
+    status: 429,
+    messgae: "Two many requests",
   },
 };
 
