@@ -3,5 +3,4 @@ dist
 .vscode
 *.log
 .env
-/src/generated
 /config.json
