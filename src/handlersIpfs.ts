@@ -17,13 +17,13 @@ export default function register() {
   const readRateLimiter = new AsyncRateLimiter({
     duration: 60000,
     max: 100,
-    namespace: redis.joinKey("readRateLimit"),
+    namespace: redis.joinKey("rrl"),
     db: redis,
   });
   const writeRateLimiter = new AsyncRateLimiter({
     duration: 60000,
     max: 10,
-    namespace: redis.joinKey("writeRateLimit"),
+    namespace: redis.joinKey("wrl"),
     db: redis,
   });
   proxy.on("proxyReq", (proxyReq, req) => {

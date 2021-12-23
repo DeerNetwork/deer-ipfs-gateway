@@ -6,8 +6,8 @@ import _ from "lodash";
 import { kisa } from "./app";
 
 export default function register() {
-  const { errs, sub, redis, statistic } = srvs;
-  const makeSignedMessage = _.template(srvs.settings.signedMessage);
+  const { errs, sub, redis, statistic, settings } = srvs;
+  const makeSignedMessage = _.template(settings.signedMessage);
   kisa.handlers.getNonce = async (ctx) => {
     const { address: rawAddress } = ctx.kisa.query;
     let address: string;
@@ -17,7 +17,7 @@ export default function register() {
       throw errs.ErrAddress.toError();
     }
     if (!address) throw errs.ErrAddress.toError();
-    const nonce = await srvs.redis.getNonce(address);
+    const nonce = await redis.getNonce(address);
     ctx.body = { nonce, address };
   };
   kisa.handlers.login = async (ctx) => {
@@ -31,7 +31,7 @@ export default function register() {
       throw errs.ErrAddress.toError();
     }
     if (!address) throw errs.ErrAddress.toError();
-    const nonce = await srvs.redis.getNonce(address);
+    const nonce = await redis.getNonce(address);
     const signedMessage = makeSignedMessage({ nonce });
     if (!signatureVerify(signedMessage, signature, publicKey).isValid) {
       throw errs.ErrSignature.toError();
@@ -40,34 +40,34 @@ export default function register() {
     if (balance.eq(new BN(0))) {
       throw errs.ErrBalance.toError();
     }
+    await redis.incNonce(address);
     ctx.body = makeJwt(address);
   };
   kisa.handlers.getStatistic = async (ctx) => {
     const { address } = ctx.state.auth;
-    const { incomes, outcomes } = await statistic.mustGet(address);
+    const { incomes, outcomes } = await statistic.getStatistic(address);
     ctx.body = { incomes, outcomes };
   };
+  function makeJwt(address: string) {
+    const { tokenExpiresIn, tokenSecret } = settings;
+    const token: string = jwt.sign(
+      {
+        address,
+      },
+      tokenSecret,
+      {
+        expiresIn: tokenExpiresIn,
+      }
+    );
+    return {
+      address,
+      token,
+      expireAt: Date.now() + tokenExpiresIn * 1000,
+    };
+  }
 }
 
 function addressToPubkey(address: string): string {
   const publicKey = decodeAddress(address);
   return u8aToHex(publicKey);
-}
-
-function makeJwt(address: string) {
-  const { tokenExpiresIn, tokenSecret } = srvs.settings;
-  const token: string = jwt.sign(
-    {
-      address,
-    },
-    tokenSecret,
-    {
-      expiresIn: tokenExpiresIn,
-    }
-  );
-  return {
-    address,
-    token,
-    expireAt: Date.now() + tokenExpiresIn * 1000,
-  };
 }

@@ -7,12 +7,13 @@ import * as HttpErr from "@use-services/httperr";
 import { mergeJson } from "./utils";
 import * as Sub from "./sub";
 import * as Statistic from "./statistic";
+import * as TaskQ from "./taskq";
 import * as Mock from "./mock";
 import * as errcodes from "./errcodes";
 import Redis from "./redis";
 
 const settings = {
-  app: "ethsub",
+  app: "dg",
   host: "0.0.0.0",
   port: 5050,
   prod: process.env.NODE_ENV === "production",
@@ -44,7 +45,6 @@ const options = {
     init: IORedis.init,
     args: {
       host: "0.0.0.0",
-      password: "password",
     },
     ctor: Redis,
   } as IORedis.Option<Redis>,
@@ -53,8 +53,15 @@ const options = {
     args: {
       maxIncomes: 5 * 1024 * 1024 * 1024,
       maxOutcomes: 5 * 1024 * 1024 * 1024,
+      ttl: 30 * 60 * 1000,
     },
   } as Statistic.Option<Statistic.Service>,
+  taskq: {
+    init: TaskQ.init,
+    args: {
+      name: "taskq",
+    },
+  } as TaskQ.Option<TaskQ.Service>,
   sub: {
     init: Sub.init,
     args: {

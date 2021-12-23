@@ -22,7 +22,7 @@ async function main() {
     stop = await init();
     srvs.logger.info(`version ${pkg.version}`);
     const { host, port } = srvs.settings;
-    await srvs.sub.start();
+    await Promise.all([srvs.sub.start(), srvs.taskq.start()]);
     await createApp();
     const app = await createApp();
     server = stoppable(http.createServer(app.callback()), 7000);

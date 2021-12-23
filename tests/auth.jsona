@@ -13,7 +13,7 @@
     },
     res: {
       body: {
-        nonce: 0,
+        nonce: 0, @type
         address: "variables.req.address1", @eval
       }
     }

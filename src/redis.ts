@@ -11,4 +11,11 @@ export default class Redis extends Service {
     if (!nonce) return 0;
     return parseInt(nonce) || 0;
   }
+  public async incNonce(address: string) {
+    await this.incr(this.joinKey("nonce", address));
+  }
+  public get statisticKey() {
+    const month = new Date().toISOString().slice(0, 7).replace(/-/, "");
+    return this.joinKey("statistic", month);
+  }
 }

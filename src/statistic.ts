@@ -7,20 +7,13 @@ export type Option<S extends Service> = ServiceOption<Args, S>;
 export interface Args {
   maxOutcomes: number;
   maxIncomes: number;
-}
-
-export type Deps = [RedisService];
-
-interface StatisticData {
-  type: "local" | "full";
-  incomes: number;
-  outcomes: number;
-  changeAt: number;
+  ttl: number;
 }
 
 export class Service {
   private args: Args;
   private db: { [k: string]: StatisticData } = {};
+  private lastSaveAt = 0;
   constructor(option: InitOption<Args, Service>) {
     this.args = option.args;
   }
@@ -55,28 +48,54 @@ export class Service {
     return true;
   }
 
-  public async mustGet(address: string) {
+  public async getStatistic(address: string) {
     const statistic = this.db[address] || this.useDefault();
     if (statistic.type === "full") {
       return statistic;
     }
-    return this.sync(address, statistic);
+    this.sync(address, statistic);
+    return statistic;
+  }
+
+  public async saveAll() {
+    const { redis } = srvs;
+    const red = redis.multi();
+    const now = Date.now();
+    const addresses = Object.keys(this.db);
+    for (const address of addresses) {
+      const statistic = this.db[address];
+      if (!statistic) continue;
+      if (statistic.changeAt > this.lastSaveAt) {
+        const { incomes, outcomes } = statistic;
+        red.hset(
+          redis.statisticKey,
+          address,
+          JSON.stringify({ incomes, outcomes })
+        );
+        continue;
+      }
+      if (now - statistic.changeAt >= this.args.ttl) {
+        delete this.db[address];
+      }
+    }
+    await red.exec();
+    this.lastSaveAt = now;
+  }
+
+  public async clearAll() {
+    this.db = {};
   }
 
   async sync(address: string, statistic: StatisticData) {
     const { redis } = srvs;
-    const data = await redis.get(redis.joinKey("statistic", address));
+    const data = await redis.hget(redis.statisticKey, address);
     if (!data) {
       statistic.type = "full";
     } else {
-      const cachedStats: StatisticData = JSON.parse(data);
-      cachedStats.incomes += statistic.incomes;
-      cachedStats.outcomes += statistic.outcomes;
-      cachedStats.changeAt = statistic.changeAt;
-      statistic = cachedStats;
+      const cachedStats: Partial<StatisticData> = JSON.parse(data);
+      statistic.incomes += cachedStats.incomes;
+      statistic.outcomes += cachedStats.outcomes;
     }
-    this.db[address] = statistic;
-    return statistic;
   }
 
   useDefault(): StatisticData {
@@ -85,3 +104,10 @@ export class Service {
 }
 
 export const init = createInitFn(Service);
+
+interface StatisticData {
+  type: "local" | "full";
+  incomes: number;
+  outcomes: number;
+  changeAt: number;
+}

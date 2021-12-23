@@ -76,7 +76,7 @@ You can retrieve IPFS data using the API with a limit of **100 requests/sec** vi
 
 ## Ipfs Api
 
-See [https://sigoden.github.io/jsona-openapi/?source=https://raw.githubusercontent.com/DeerNetwork/deer-ipfs-gateway/main/apiIpfs.jsona]
+See [ipfs api](https://sigoden.github.io/jsona-openapi/?source=https://raw.githubusercontent.com/DeerNetwork/deer-ipfs-gateway/main/apiIpfs.jsona)
 
 ## License
 
