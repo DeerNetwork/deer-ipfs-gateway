@@ -18,5 +18,6 @@ jobs:
         with:
           node-version: '16'
       - run: yarn 
+      - run: yarn kisagen
       - run: yarn build
       - run: yarn check
