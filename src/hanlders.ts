@@ -45,7 +45,8 @@ export default function register() {
     const now = Date.now();
     await redis.setex(redis.tokenKey(address), settings.tokenExpiresIn, secret);
     ctx.body = {
-      token: `${address}:${secret}`,
+      address,
+      secret,
       expireAt: now + settings.tokenExpiresIn * 1000,
     };
   };

@@ -1,8 +1,13 @@
+import {
+  ClientRequest,
+  IncomingMessage,
+  OutgoingMessage,
+  ServerResponse,
+} from "http";
 import httpProxy from "http-proxy";
 import { Context } from "kisa";
 import _ from "lodash";
 import AsyncRateLimiter, { Status as RateLimitStatus } from "async-ratelimiter";
-import { OutgoingMessage, ServerResponse } from "http";
 import { Response } from "koa";
 import { PassThrough } from "stream";
 
@@ -62,12 +67,12 @@ export default function register() {
       _.set(req, "address", ctx.state.auth.address);
       await new Promise((resolve, reject) => {
         const resAdapter = makeProxyResponseAdapter(ctx.response, resolve);
-        (req as any).on("lack:in", (proxyReq) => {
+        (req as any).on("lack:in", (proxyReq: ClientRequest) => {
           const err = errs.ErrLackOfInQuota.toError();
           srvs.logger.warn(err.message, { address });
           proxyReq.destroy(err);
         });
-        (req as any).on("lack:out", (proxyRes) => {
+        (req as any).on("lack:out", (proxyRes: IncomingMessage) => {
           const err = errs.ErrLackOfOutQuota.toError();
           srvs.logger.warn(err.message, { address });
           proxyRes.destroy(err);

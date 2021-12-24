@@ -39,9 +39,25 @@
     },
     res: {
       body: {
-        token: "", @type
+        address: "", @type
+        secret: "", @type
         expireAt: 0, @type
       }
+    }
+  },
+  makeAuth: { @describe("Convert secret to auth header") @mixin(["runSrvs"])
+    req: {
+      body: {
+        path: "mock.makeAuth",
+        args: [
+          "login.res.body.address", @eval
+          "login.res.body.secret", @eval
+        ],
+        ret: true,
+      }
+    },
+    res: {
+      body: "", @type
     }
   }
 }

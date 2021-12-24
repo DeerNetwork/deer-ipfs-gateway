@@ -27,7 +27,7 @@ const signature = account.sign(message); // signature
 ```
 curl -X POST -d '{"address":"15oF4uVJwmo4TdGW7VfQxNLavjCXviqxT9S1MgbjMNHr6Sp5","signature":"0x..."} http://localhost:5050/login -H 'content-type: application/json'
 
-> {"token":"15oF4uVJwmo4TdGW7VfQxNLavjCXviqxT9S1MgbjMNHr6Sp5:...","expireAt"::1640867865160}
+> {"address":"15oF4uVJwmo4TdGW7VfQxNLavjCXviqxT9S1MgbjMNHr6Sp5","secret":"28db19a5-1257-47c7-b357-4cbaffe14780","expireAt"::1640867865160}
 ```
 
 ### Call ipfs api with token
@@ -36,7 +36,7 @@ After the login, use jwt token to authenticate your API
 
 ```sh
 curl -X POST -F file=@myfile \
--H "authorization: Basic <token>" \
+-u "15oF4uVJwmo4TdGW7VfQxNLavjCXviqxT9S1MgbjMNHr6Sp5:28db19a5-1257-47c7-b357-4cbaffe14780" \
 "http://localhost:5050/api/v0/add"
 
 > {

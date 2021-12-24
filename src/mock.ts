@@ -26,6 +26,10 @@ export class Service {
       signature: u8aToHex(data),
     };
   }
+
+  async makeAuth(address: string, secret: string) {
+    return "Basic " + Buffer.from(`${address}:${secret}`).toString("base64");
+  }
 }
 
 export const init = createInitFn(Service);

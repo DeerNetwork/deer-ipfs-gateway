@@ -26,8 +26,9 @@ export default function auth(
   };
 }
 
-export async function parseBasicToken(token: string) {
+export async function parseBasicToken(tokenRaw: string) {
   const { redis, errs } = srvs;
+  const token = Buffer.from(tokenRaw, "base64").toString();
   const [address, secret] = token.split(":");
   if (!address || !secret) throw errs.ErrAuth.toError();
   if (!(await redis.exists(redis.tokenKey(address)))) {

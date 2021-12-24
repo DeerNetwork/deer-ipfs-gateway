@@ -34,7 +34,8 @@
     res: {
       200: {
         address: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
-        token: "<data:token>",
+        secret: "28db19a5-1257-47c7-b357-4cbaffe14780",
+        expireAt: 1640315718274
       }
     }
   },
