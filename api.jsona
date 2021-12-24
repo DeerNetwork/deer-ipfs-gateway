@@ -44,8 +44,8 @@
     req: {},
     res: {
       200: {
-        incomes: 0, @description("入站流量")
-        outcomes: 0, @description("出站流量")
+        incomes: 0, @description("up bytes")
+        outcomes: 0, @description("down bytes")
       }
     }
   }
