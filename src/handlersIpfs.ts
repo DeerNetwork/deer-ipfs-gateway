@@ -27,18 +27,18 @@ export default function register() {
     db: redis,
   });
   proxy.on("proxyReq", (proxyReq, req) => {
-    req.on("data", (chunk: Buffer) => {
+    req.on("data", async (chunk: Buffer) => {
       const address = _.get(req, "address");
-      const ok = statistic.inBytes(address, chunk.length);
+      const ok = await statistic.inBytes(address, chunk.length);
       if (!ok) {
         req.emit("lack:in", proxyReq);
       }
     });
   });
   proxy.on("proxyRes", (proxyRes, req) => {
-    proxyRes.on("data", (chunk: Buffer) => {
+    proxyRes.on("data", async (chunk: Buffer) => {
       const address = _.get(req, "address");
-      const ok = statistic.outBytes(address, chunk.length);
+      const ok = await statistic.outBytes(address, chunk.length);
       if (!ok) {
         req.emit("lack:out", proxyRes);
       }
@@ -71,8 +71,10 @@ export default function register() {
           const err = errs.ErrLackOfOutQuota.toError();
           srvs.logger.warn(err.message, { address });
           proxyRes.destroy(err);
-          ctx.response.status = err.status;
-          ctx.response.body = { Error: err.message };
+          if (!ctx.response.body) {
+            ctx.response.status = err.status;
+            ctx.response.body = { Error: err.message };
+          }
         });
         proxy.web(
           req,

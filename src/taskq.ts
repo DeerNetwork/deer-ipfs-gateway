@@ -33,26 +33,15 @@ export class Service {
       prefix: srvs.settings.app,
       connection: this.createConnection(),
     });
-    this.queue.add(
-      "resetStatisticMonthly",
-      { id: "resetStatisticMonthly" },
-      { repeat: { cron: "55 59 23 L * *" } }
-    );
-    this.queue.add(
-      "saveStatisticMinutely",
-      { id: "saveStatisticMinutely" },
-      { repeat: { cron: "0 * * * * *" } }
-    );
     this.worker = new Worker(
       name,
       async (job) => {
-        if (job.name === "saveStatisticMinutely") {
-          await srvs.statistic.saveAll();
-        } else if (job.name === "resetStatisticMonthly") {
-          await srvs.statistic.clearAll();
-        }
+        //
       },
-      { connection: this.createConnection(), prefix: srvs.settings.app }
+      {
+        connection: this.createConnection(),
+        prefix: srvs.settings.app,
+      }
     );
     this.queueScheduler = new QueueScheduler(name, {
       connection: this.createConnection(),
