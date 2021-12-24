@@ -6,6 +6,6 @@ RUN yarn --prod
 FROM sigoden/node:16-slim
 WORKDIR /app
 COPY --from=builder /app .
-COPY dist .
+COPY dist ./dist
 ENV NODE_ENV=production
 CMD ["node", "./dist/index.js"]

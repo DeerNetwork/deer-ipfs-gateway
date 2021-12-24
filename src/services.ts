@@ -52,7 +52,6 @@ const options = {
     args: {
       maxIncomes: 5 * 1024 * 1024 * 1024,
       maxOutcomes: 5 * 1024 * 1024 * 1024,
-      ttl: 30 * 60 * 1000,
     },
   } as Statistic.Option<Statistic.Service>,
   taskq: {
