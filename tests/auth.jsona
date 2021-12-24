@@ -39,7 +39,6 @@
     },
     res: {
       body: {
-        address: "variables.req.address1", @eval
         token: "", @type
         expireAt: 0, @type
       }

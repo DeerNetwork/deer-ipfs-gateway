@@ -1,9 +1,8 @@
 import useKisa, { App, Router, HandleValidateError, State } from "kisa";
-import jwt from "jsonwebtoken";
 import cors from "@koa/cors";
 import bodyParser from "koa-bodyparser";
 import { srvs } from "./services";
-import bearer from "./middlewares/bearer";
+import auth, { parseBasicToken } from "./middlewares/auth";
 import error from "./middlewares/error";
 import * as Api from "./generated/api";
 import * as ApiIpfs from "./generated/apiIpfs";
@@ -33,10 +32,7 @@ const [kisa, mountKisa] = useKisa<
     validate: handleValidateError,
   },
   securityHandlers: {
-    jwt: (_) =>
-      bearer("auth", async (token) => {
-        return jwt.verify(token, srvs.settings.tokenSecret);
-      }),
+    auth: (_) => auth("auth", parseBasicToken),
   },
 });
 
@@ -51,10 +47,7 @@ const [kisaIpfs, mountKisaIpfs] = useKisa<
     validate: handleValidateError,
   },
   securityHandlers: {
-    jwt: (_) =>
-      bearer("auth", async (token) => {
-        return jwt.verify(token, srvs.settings.tokenSecret);
-      }),
+    auth: (_) => auth("auth", parseBasicToken),
   },
 });
 

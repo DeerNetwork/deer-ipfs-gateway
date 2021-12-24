@@ -1,5 +1,5 @@
 import { decodeAddress, signatureVerify } from "@polkadot/util-crypto";
-import jwt from "jsonwebtoken";
+import { v4 as uuidv4 } from "uuid";
 import { u8aToHex, BN } from "@polkadot/util";
 import { srvs } from "./services";
 import _ from "lodash";
@@ -41,30 +41,19 @@ export default function register() {
       throw errs.ErrBalance.toError();
     }
     await redis.incNonce(address);
-    ctx.body = makeJwt(address);
+    const secret = uuidv4();
+    const now = Date.now();
+    await redis.setex(redis.tokenKey(address), settings.tokenExpiresIn, secret);
+    ctx.body = {
+      token: `${address}:${secret}`,
+      expireAt: now + settings.tokenExpiresIn * 1000,
+    };
   };
   kisa.handlers.getStatistic = async (ctx) => {
     const { address } = ctx.state.auth;
     const { incomes, outcomes } = await statistic.getStatistic(address);
     ctx.body = { incomes, outcomes };
   };
-  function makeJwt(address: string) {
-    const { tokenExpiresIn, tokenSecret } = settings;
-    const token: string = jwt.sign(
-      {
-        address,
-      },
-      tokenSecret,
-      {
-        expiresIn: tokenExpiresIn,
-      }
-    );
-    return {
-      address,
-      token,
-      expireAt: Date.now() + tokenExpiresIn * 1000,
-    };
-  }
 }
 
 function addressToPubkey(address: string): string {

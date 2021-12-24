@@ -18,4 +18,7 @@ export default class Redis extends Service {
     const month = new Date().toISOString().slice(0, 7).replace(/-/, "");
     return this.joinKey("statistic", month);
   }
+  public tokenKey(address: string) {
+    return this.joinKey("token", address);
+  }
 }

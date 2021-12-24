@@ -4,7 +4,7 @@ A ipfs gateway with deer wallet based authentication.
 
 ## Usage
 
-### Get Jwt token
+### Get Auth token
 
 1. Get nonce
 
@@ -27,7 +27,7 @@ const signature = account.sign(message); // signature
 ```
 curl -X POST -d '{"address":"15oF4uVJwmo4TdGW7VfQxNLavjCXviqxT9S1MgbjMNHr6Sp5","signature":"0x..."} http://localhost:5050/login -H 'content-type: application/json'
 
-> {...,"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...","expireAt"::1640867865160}
+> {"token":"15oF4uVJwmo4TdGW7VfQxNLavjCXviqxT9S1MgbjMNHr6Sp5:...","expireAt"::1640867865160}
 ```
 
 ### Call ipfs api with token
@@ -36,7 +36,7 @@ After the login, use jwt token to authenticate your API
 
 ```sh
 curl -X POST -F file=@myfile \
--H "authorization: Bearer <jwt token>" \
+-H "authorization: Basic <token>" \
 "http://localhost:5050/api/v0/add"
 
 > {

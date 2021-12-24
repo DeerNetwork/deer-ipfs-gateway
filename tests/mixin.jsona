@@ -111,7 +111,7 @@
   auth1: {
     req: {
       headers: {
-        authorization: `"Bearer " + auth.login.res.body.token`, @eval
+        authorization: `"Basic " + auth.login.res.body.token`, @eval
       }
     }
   },
