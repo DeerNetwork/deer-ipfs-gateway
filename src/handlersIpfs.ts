@@ -20,14 +20,14 @@ export default function register() {
   const { ipfsServer } = settings;
   const proxy = httpProxy.createProxyServer();
   const readRateLimiter = new AsyncRateLimiter({
-    duration: 60000,
-    max: 6000,
+    duration: 10000,
+    max: 1000,
     namespace: redis.joinKey("rrl"),
     db: redis,
   });
   const writeRateLimiter = new AsyncRateLimiter({
-    duration: 60000,
-    max: 600,
+    duration: 10000,
+    max: 100,
     namespace: redis.joinKey("wrl"),
     db: redis,
   });
