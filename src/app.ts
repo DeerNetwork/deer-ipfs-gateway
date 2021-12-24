@@ -75,7 +75,10 @@ export default function createApp() {
   app.use(error());
   app.use(async (ctx, next) => {
     ctx.set("Access-Control-Allow-Origin", "*");
-    ctx.set("Access-Control-Allow-Methods", "POST,GET,PUT,DELETE,OPTIONS");
+    if (ctx.method === "OPTIONS") {
+      ctx.set("Access-Control-Allow-Methods", "POST,GET,PUT,DELETE,OPTIONS");
+      ctx.set("Access-Control-Allow-Headers", "*,Authorization");
+    }
     await next();
   });
   app.use(
