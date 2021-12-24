@@ -1,5 +1,4 @@
 import useKisa, { App, Router, HandleValidateError, State } from "kisa";
-import cors from "@koa/cors";
 import bodyParser from "koa-bodyparser";
 import { srvs } from "./services";
 import auth, { parseBasicToken } from "./middlewares/auth";
@@ -74,12 +73,11 @@ export default function createApp() {
   const app = new App();
   const router = new Router();
   app.use(error());
-  app.use(
-    cors({
-      origin: "*",
-      allowHeaders: "*",
-    })
-  );
+  app.use(async (ctx, next) => {
+    ctx.set("Access-Control-Allow-Origin", "*");
+    ctx.set("Access-Control-Allow-Methods", "POST,GET,PUT,DELETE,OPTIONS");
+    await next();
+  });
   app.use(
     bodyParser({
       enableTypes: ["json"],
