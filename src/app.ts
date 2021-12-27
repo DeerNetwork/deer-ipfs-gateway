@@ -73,14 +73,16 @@ export default function createApp() {
   const app = new App();
   const router = new Router();
   app.use(error());
-  app.use(async (ctx, next) => {
-    ctx.set("Access-Control-Allow-Origin", "*");
-    if (ctx.method === "OPTIONS") {
-      ctx.set("Access-Control-Allow-Methods", "POST,GET,PUT,DELETE,OPTIONS");
-      ctx.set("Access-Control-Allow-Headers", "*,Authorization");
-    }
-    await next();
-  });
+  if (srvs.settings.cors) {
+    app.use(async (ctx, next) => {
+      ctx.set("Access-Control-Allow-Origin", "*");
+      if (ctx.method === "OPTIONS") {
+        ctx.set("Access-Control-Allow-Methods", "POST,GET,PUT,DELETE,OPTIONS");
+        ctx.set("Access-Control-Allow-Headers", "*,Authorization");
+      }
+      await next();
+    });
+  }
   app.use(
     bodyParser({
       enableTypes: ["json"],

@@ -20,6 +20,7 @@ const settings = {
   baseDir: process.env.BASE_DIR || process.cwd(),
   signedMessage: "login to deer ipfs gateway, nonce=${nonce}",
   ipfsServer: "http://127.0.0.1:5001",
+  cors: false,
   tokenExpiresIn: 30 * 24 * 60 * 60,
   staticFiles: {
     api: "api.jsona",
