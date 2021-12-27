@@ -78,6 +78,19 @@ You can retrieve IPFS data using the API with a limit of **100 requests/sec** vi
 
 See [ipfs api](https://sigoden.github.io/jsona-openapi/?source=https://raw.githubusercontent.com/DeerNetwork/deer-ipfs-gateway/main/apiIpfs.jsona)
 
+## CORS
+
+To use cors, you should:
+ - add `settings.args.cors: true` to config.json
+ - enable api cors on ipfs server
+ ```
+ ipfs config --json API.HTTPHeaders.Access-Control-Allow-Origin '["*"]'
+ ipfs config --json API.HTTPHeaders.Access-Control-Allow-Methods '["POST"]'
+ ipfs config --json API.HTTPHeaders.Access-Control-Allow-Headers '["*", "Authorization"]'
+ ```
+
+
+
 ## License
 
 [Apache 2.0](./LICENSE)
