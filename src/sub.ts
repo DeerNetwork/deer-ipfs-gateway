@@ -1,5 +1,6 @@
 import { ApiPromise, WsProvider } from "@polkadot/api";
 import { cryptoWaitReady } from "@polkadot/util-crypto";
+import { AccountId } from "@polkadot/types/interfaces/runtime";
 import { sleep } from "./utils";
 import { srvs } from "./services";
 import _ from "lodash";
@@ -35,6 +36,7 @@ export class Service {
   }
   public async start() {
     await this.waitSynced();
+    this.listen();
   }
   public async balanceOf(address: string) {
     const account = await this.api.query.system.account(address);
@@ -42,6 +44,19 @@ export class Service {
   }
   public normalizeAddress(address: string) {
     return this.api.createType("AccountId", address).toString();
+  }
+
+  private listen() {
+    const { redis } = srvs;
+    this.api.query.system.events(async (events) => {
+      for (const er of events) {
+        const { method, section, data } = er.event;
+        if (section === "system" && method === "KilledAccount") {
+          const [accountId] = data as unknown as [AccountId];
+          redis.del(redis.tokenKey(accountId.toString()));
+        }
+      }
+    });
   }
 
   private async waitSynced() {
