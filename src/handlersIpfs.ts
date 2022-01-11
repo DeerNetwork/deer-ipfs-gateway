@@ -64,9 +64,25 @@ export default function register() {
       }
       await statistic.checkStatistic(address);
       const { req } = ctx;
-      _.set(req, "address", ctx.state.auth.address);
+      _.set(req, "address", address);
       await new Promise((resolve, reject) => {
-        const resAdapter = makeProxyResponseAdapter(ctx.response, resolve);
+        let spy: PassThrough;
+        if (operationId === "add") {
+          spy = new PassThrough();
+          const chunks = [];
+          spy.on("data", (chunk) => {
+            chunks.push(chunk);
+          });
+          spy.on("end", () => {
+            const buf = Buffer.concat(chunks);
+            try {
+              const result = JSON.parse(buf.toString());
+              if (result.Hash)
+                srvs.redis.logAddIpfs(address, result.Hash, result.Name);
+            } catch {}
+          });
+        }
+        const resAdapter = makeProxyResponseAdapter(ctx.response, resolve, spy);
         (req as any).on("lack:in", (proxyReq: ClientRequest) => {
           const err = errs.ErrLackOfInQuota.toError();
           srvs.logger.warn(err.message, { address });
@@ -96,7 +112,8 @@ export default function register() {
 
 function makeProxyResponseAdapter(
   response: Response,
-  done: (v?: any) => void
+  done: (v?: any) => void,
+  spy?: PassThrough
 ): ServerResponse {
   const resAdapter = new OutgoingMessage() as ServerResponse;
 
@@ -118,6 +135,7 @@ function makeProxyResponseAdapter(
       );
     }
 
+    if (spy) proxyRes.pipe(spy);
     response.body = proxyRes.pipe(new PassThrough());
 
     done();
