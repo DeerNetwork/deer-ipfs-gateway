@@ -94,14 +94,12 @@ To use cors, you should:
 
 ```
     location / {
-        client_body_buffer_size 128k;
-        proxy_pass http://127.0.0.1:5050;
-        proxy_redirect      off;
-        proxy_set_header    Host              $host;
-        proxy_set_header    X-Real-IP         $remote_addr;
-        proxy_set_header    X-Forwarded-For   $proxy_add_x_forwarded_for;
-        proxy_set_header    X-Forwarded-Proto $scheme;
-        proxy_http_version 1.1;
+        proxy_http_version 1.1; # very important
+        proxy_pass   http://localhost:5050/;
+        proxy_set_header Host               $http_host;
+        proxy_set_header X-Real-IP          $remote_addr;
+        proxy_set_header X-Forwarded-For    $proxy_add_x_forwarded_for;
+        add_header Cache-Control no-cache;
     }
 ```
 
